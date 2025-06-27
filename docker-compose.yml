@@ -1,0 +1,56 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-veera-payslip
+    ports:
+      - "5036:5432"
+    environment:
+      POSTGRES_DB: payroll_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  backend:
+    build: ./Backend
+    container_name: Backend-veera
+    ports:
+      - "3069:3069"
+    depends_on:
+      - postgres
+    environment:
+      PGUSER: postgres
+      PGPASSWORD: admin123
+      PGDATABASE: payroll_db
+      PGHOST: postgres
+      PGPORT: 5432
+    restart: unless-stopped
+
+  frontend:
+    build: ./Frontend
+    container_name: Frontend-veera
+    ports:
+      - "9002:80"
+    restart: unless-stopped
+
+  hr:
+    build: ./HR
+    container_name: HR-veera
+    ports:
+      - "9003:80"
+    restart: unless-stopped
+
+  payslip:
+    build: ./Payslip
+    container_name: Payslip-veera
+    ports:
+      - "9004:80"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+
